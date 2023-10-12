@@ -63,16 +63,6 @@ namespace Homework_9
 
         private static void ShowCostsHistory(SqliteConnection connection)
         {
-            var command = new SqliteCommand("SELECT * FROM COSTS", connection);
-            SqliteDataReader reader = command.ExecuteReader();
-            Console.WriteLine(reader);
-            Console.ReadLine();
-
-            //var result = command.ExecuteNonQuery();
-
-
-            //Console.WriteLine(result);
-            //Console.ReadLine();
 
             UserChoise(connection);
         }
