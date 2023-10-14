@@ -15,7 +15,7 @@ namespace Homework_9
 
                 //var com = new SqliteCommand("DROP TABLE COSTS", connection).ExecuteNonQuery();
 
-                var com = new SqliteCommand("DELETE FROM COSTS", connection).ExecuteNonQuery();
+                //var com = new SqliteCommand("DELETE FROM COSTS", connection).ExecuteNonQuery();
 
                 var createTableCom = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS COSTS (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, 
                 Description TEXT, Suma TEXT NOT NULL, Type TEXT, Date TEXT NOT NULL)", connection);
