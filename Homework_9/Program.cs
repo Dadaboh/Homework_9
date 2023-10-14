@@ -9,121 +9,188 @@ namespace Homework_9
         {
             Console.OutputEncoding = Encoding.UTF8;
 
-            var connection = new SqliteConnection($"DataSource={Directory.GetCurrentDirectory()};Filename=SqliteHomework.db;");
+            using (var connection = new SqliteConnection($"DataSource={Directory.GetCurrentDirectory()};Filename=SqliteHomework.db;"))
+            {
+                connection.Open();
 
-            connection.Open();
+                //var com = new SqliteCommand("DROP TABLE COSTS", connection).ExecuteNonQuery();
 
-            //var com = new SqliteCommand("DROP TABLE COSTS", connection).ExecuteNonQuery();
+                //var com = new SqliteCommand("DELETE FROM COSTS", connection).ExecuteNonQuery();
 
-            var createTableCom = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS COSTS (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, 
-            Description TEXT, Sum TEXT NOT NULL, Type TEXT, Date TEXT NOT NULL)", connection);
-            createTableCom.ExecuteNonQuery();
+                var createTableCom = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS COSTS (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, 
+                Description TEXT, Sum REAL NOT NULL, Type TEXT, Date TEXT NOT NULL)", connection);
+                createTableCom.ExecuteNonQuery();
 
-            UserChoise(connection);
+                connection.Close();
+
+                UserChoise(connection);
+            }
         }
 
 
         private static void UserChoise(SqliteConnection connection)
         {
-            var checkUserChoise = true;
-
-            do
+            using(connection)
             {
-                Console.WriteLine($"Оберіть тип дії: \n\t 1 - Переглянути історію витрат \n\t 2 - Додати нову витрату \n\t 3 - Вивести статистику");
+                var checkUserChoise = true;
 
-                string userChoise = Console.ReadLine();
-
-                if (userChoise == "1" || userChoise == "2" || userChoise == "3")
+                do
                 {
-                    checkUserChoise = false;
+                    Console.WriteLine($"Оберіть тип дії: \n\t 1 - Переглянути історію витрат \n\t 2 - Додати нову витрату \n\t 3 - Вивести статистику");
 
-                    switch (Convert.ToInt32(userChoise))
+                    string userChoise = Console.ReadLine();
+
+                    if (userChoise == "1" || userChoise == "2" || userChoise == "3")
                     {
-                        case 1:
-                            ShowCostsHistory(connection);
-                            break;
+                        checkUserChoise = false;
 
-                        case 2:
-                            AddCost(connection);
-                            break;
+                        switch (Convert.ToInt32(userChoise))
+                        {
+                            case 1:
+                                ShowCostsHistory(connection);
+                                break;
 
-                        case 3:
-                            ShowStatistics(connection);
-                            break;
+                            case 2:
+                                AddCost(connection);
+                                break;
+
+                            case 3:
+                                ShowStatistics(connection);
+                                break;
+                        }
+
                     }
-
+                    else
+                    {
+                        Console.WriteLine("Недопустиме значення.");
+                    }
                 }
-                else
-                {
-                    Console.WriteLine("Недопустиме значення.");
-                }
+                while (checkUserChoise);
             }
-            while (checkUserChoise);
+           
         }
 
         private static void ShowCostsHistory(SqliteConnection connection)
         {
+            using(connection)
+            {
+                Console.Clear();
+                connection.Open();
+
+                var reader = new SqliteCommand("SELECT * FROM COSTS", connection).ExecuteReader();
+                
+                if(!reader.HasRows)
+                {
+                    Console.WriteLine("В таблиці немає жодного запису.\n");
+
+                    UserChoise(connection);
+                }
+                else
+                {
+                    while(reader.Read())
+                    {
+                        Console.WriteLine($"Опис витрати: {reader.GetValue(1)}");
+                        Console.WriteLine($"Сума витрати: {reader.GetValue(2)}");
+                        Console.WriteLine($"Тип витрати: {reader.GetValue(3)}");
+                        Console.WriteLine($"Дата витрати: {reader.GetValue(4)}");
+                        Console.WriteLine();
+                    }
+                }
+                connection.Close();
+            }
+
+
 
             UserChoise(connection);
         }
 
         private static void AddCost(SqliteConnection connection)
         {
-            Cost usersCost = new Cost();
+            Console.Clear();
 
-            Console.WriteLine("Введіть опис витрати:");
-            usersCost.description = Console.ReadLine();
-
-            string tmpString;
-
+            using (connection)
             {
-                double tmpDouble;
+                connection.Open();
 
-                do
+                Cost usersCost = new Cost();
+
+                Console.WriteLine("Введіть опис витрати:");
+                usersCost.description = Console.ReadLine();
+
+                string tmpString;
+
                 {
-                    Console.WriteLine("Введіть суму витрати:");
-                    tmpString = Console.ReadLine();
+                    double tmpDouble;
 
+                    do
+                    {
+                        Console.WriteLine("Введіть суму витрати:");
+                        tmpString = Console.ReadLine();
+
+                    }
+                    while (!double.TryParse(tmpString, out tmpDouble));
+
+                    usersCost.sum = tmpDouble;
                 }
-                while (!double.TryParse(tmpString, out tmpDouble));
 
-                usersCost.sum = tmpDouble;
-            }
-
-            Console.WriteLine("Введіть тип витрати:");
-            usersCost.type = Console.ReadLine();
+                Console.WriteLine("Введіть тип витрати:");
+                usersCost.type = Console.ReadLine();
 
 
-            {
-                DateTime tmpDateTime;
-
-                do
                 {
-                    Console.WriteLine("Введіть дату витрати:");
-                    tmpString = Console.ReadLine();
+                    DateTime tmpDateTime;
 
+                    do
+                    {
+                        Console.WriteLine("Введіть дату витрати:");
+                        tmpString = Console.ReadLine();
+
+                    }
+                    while (!DateTime.TryParse(tmpString, out tmpDateTime));
+
+                    usersCost.date = tmpDateTime;
                 }
-                while (!DateTime.TryParse(tmpString, out tmpDateTime));
 
-                usersCost.date = tmpDateTime;
+                var dateStr = usersCost.date.ToString();
+
+                var command = new SqliteCommand($"INSERT INTO COSTS (Description, Sum, Type, Date) VALUES ('{usersCost.description}', '{usersCost.sum}', '{usersCost.type}', '{dateStr}')", connection).ExecuteNonQuery();
+
+                connection.Close();
+
+                UserChoise(connection);
             }
-
-            var dateStr = usersCost.date.ToString();
-
-            Console.WriteLine(usersCost.description);
-            Console.WriteLine(usersCost.sum);
-            Console.WriteLine(usersCost.type);
-            Console.WriteLine(dateStr);
-
-            Console.ReadLine();
-
-            var command = new SqliteCommand($"INSERT INTO COSTS (Description, Sum, Type, Date) VALUES ('{usersCost.description}', '{usersCost.sum}', '{usersCost.type}', '{dateStr}')", connection).ExecuteNonQuery();
-
-            UserChoise(connection);
+            
         }
         private static void ShowStatistics(SqliteConnection connection)
         {
+            Console.Clear();
 
+            using (connection)
+            {
+                connection.Open();
+
+                var reader = new SqliteCommand("SELECT * FROM COSTS", connection).ExecuteReader();
+
+                if (!reader.HasRows)
+                {
+                    Console.WriteLine("В таблиці немає жодного запису.\n");
+                }
+                else
+                {
+                    var maxSum = new SqliteCommand("SELECT max(SUM) from COSTS", connection).ExecuteScalar();
+                    var minSum = new SqliteCommand("SELECT min(SUM) from COSTS", connection).ExecuteScalar();
+                    var avgSum = new SqliteCommand("SELECT sum(SUM)/count(ID) from COSTS", connection).ExecuteScalar();
+
+                    Console.WriteLine(avgSum.GetType());
+                    Console.ReadLine();
+
+                    Console.WriteLine($"Максимальна сума: {maxSum} | Мінімальна сума: {minSum} | Середня сума: {avgSum}");
+                }
+
+                connection.Close();
+
+                UserChoise(connection);
+            }
         }
     }
 
