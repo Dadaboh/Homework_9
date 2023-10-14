@@ -15,10 +15,10 @@ namespace Homework_9
 
                 //var com = new SqliteCommand("DROP TABLE COSTS", connection).ExecuteNonQuery();
 
-                //var com = new SqliteCommand("DELETE FROM COSTS", connection).ExecuteNonQuery();
+                var com = new SqliteCommand("DELETE FROM COSTS", connection).ExecuteNonQuery();
 
                 var createTableCom = new SqliteCommand(@"CREATE TABLE IF NOT EXISTS COSTS (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, 
-                Description TEXT, Sum REAL NOT NULL, Type TEXT, Date TEXT NOT NULL)", connection);
+                Description TEXT, Suma TEXT NOT NULL, Type TEXT, Date TEXT NOT NULL)", connection);
                 createTableCom.ExecuteNonQuery();
 
                 connection.Close();
@@ -120,7 +120,7 @@ namespace Homework_9
                 string tmpString;
 
                 {
-                    double tmpDouble;
+                    decimal tmpDecimal;
 
                     do
                     {
@@ -128,9 +128,9 @@ namespace Homework_9
                         tmpString = Console.ReadLine();
 
                     }
-                    while (!double.TryParse(tmpString, out tmpDouble));
+                    while (!decimal.TryParse(tmpString, out tmpDecimal));
 
-                    usersCost.sum = tmpDouble;
+                    usersCost.sum = tmpDecimal;
                 }
 
                 Console.WriteLine("Введіть тип витрати:");
@@ -153,7 +153,7 @@ namespace Homework_9
 
                 var dateStr = usersCost.date.ToString();
 
-                var command = new SqliteCommand($"INSERT INTO COSTS (Description, Sum, Type, Date) VALUES ('{usersCost.description}', '{usersCost.sum}', '{usersCost.type}', '{dateStr}')", connection).ExecuteNonQuery();
+                var command = new SqliteCommand($"INSERT INTO COSTS (Description, Suma, Type, Date) VALUES ('{usersCost.description}', '{usersCost.sum}', '{usersCost.type}', '{dateStr}')", connection).ExecuteNonQuery();
 
                 connection.Close();
 
@@ -177,9 +177,9 @@ namespace Homework_9
                 }
                 else
                 {
-                    var maxSum = new SqliteCommand("SELECT max(SUM) from COSTS", connection).ExecuteScalar();
-                    var minSum = new SqliteCommand("SELECT min(SUM) from COSTS", connection).ExecuteScalar();
-                    var avgSum = new SqliteCommand("SELECT sum(SUM)/count(ID) from COSTS", connection).ExecuteScalar();
+                    var maxSum = new SqliteCommand("SELECT max(SUMA) from COSTS", connection).ExecuteScalar();
+                    var minSum = new SqliteCommand("SELECT min(SUMA) from COSTS", connection).ExecuteScalar();
+                    var avgSum = new SqliteCommand("SELECT avg(SUMA) from COSTS", connection).ExecuteScalar();
 
                     Console.WriteLine(avgSum.GetType());
                     Console.ReadLine();
@@ -198,7 +198,7 @@ namespace Homework_9
     public class Cost
     {
         public string description { get; set; }
-        public double sum { get; set; }
+        public decimal sum { get; set; }
         public string type { get; set; }
         public DateTime date { get; set; }
     }
