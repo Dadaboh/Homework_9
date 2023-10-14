@@ -177,14 +177,33 @@ namespace Homework_9
                 }
                 else
                 {
-                    var maxSum = new SqliteCommand("SELECT max(SUMA) from COSTS", connection).ExecuteScalar();
-                    var minSum = new SqliteCommand("SELECT min(SUMA) from COSTS", connection).ExecuteScalar();
-                    var avgSum = new SqliteCommand("SELECT avg(SUMA) from COSTS", connection).ExecuteScalar();
+                    //var maxSum = new SqliteCommand("SELECT max(SUMA) from COSTS", connection).ExecuteScalar();
+                    //var minSum = new SqliteCommand("SELECT min(SUMA) from COSTS", connection).ExecuteScalar();
+                    //var avgSum = new SqliteCommand("SELECT avg(SUMA) from COSTS", connection).ExecuteScalar();
 
-                    Console.WriteLine(avgSum.GetType());
-                    Console.ReadLine();
+                    var valuesList = new List<decimal>();
 
-                    Console.WriteLine($"Максимальна сума: {maxSum} | Мінімальна сума: {minSum} | Середня сума: {avgSum}");
+                    while(reader.Read())
+                    {
+                        try
+                        {
+                            valuesList.Add(decimal.Parse(reader.GetValue(2).ToString()));
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                valuesList.Add(decimal.Parse(reader.GetValue(2).ToString().Replace('.', ',')));
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
+
+                    Console.WriteLine($"Максимальна сума: {valuesList.Max()} | Мінімальна сума: {valuesList.Min()} | Середня сума: {valuesList.Average()}");
+
                 }
 
                 connection.Close();
